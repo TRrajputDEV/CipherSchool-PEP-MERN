@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS Grid</title>
+    <style>
+      body {
+        display: grid;
+        grid-template-columns: repeat(2, 100px); /* Simplified column definition */
+        grid-template-rows: repeat(2, 100px); /* Simplified row definition */
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      #div1 {
+        background-color: lightcoral;
+      }
+      #div2 {
+        background-color: lightblue;
+        height: 100px;
+      }
+      #div3 {
+        background-color: lightgreen;
+      }
+      #div4 {
+        background-color: rgb(215, 215, 86);
+      }
+      div {
+        padding: 10px;
+        border-radius: 8px;
+      }
+      #weck {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        width: max-content;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="div1">Div 1</div>
+    <div id="weck">
+      <div id="div2">Div 2</div>
+      <div id="div3">Div 3</div>
+    </div>
+    <div id="div4">Div 4</div>
+  </body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI - Calculator</title>
+</head>
+<body>
+    <style>
+        
+        .main {
+            border: 2px solid #333;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .data {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .inpt {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .show {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="main">
+
+        <div class="title">
+            <h1>BODY MASS INDEX </h1>
+        </div>
+
+        <div class="data">
+            <label for="height">
+                Height
+            </label>
+            <input type="number" name="height" id="height" class="inpt">
+
+            <label for="weight">
+                weight
+            </label>
+            <input type="number" name="weight" id="weight" class="inpt">
+        </div>
+
+        <div>
+            <button onclick="calc()">Submit</button>
+        </div>
+
+        <div class="show">
+            <p id="ans" class="ans">Your BMI</p>
+        </div>
+    </div>
+
+
+
+
+    <script>
+        let BMI = 0;
+        
+        function calc(){
+            const weight = document.getElementById('weight').value;
+            const height = document.getElementById('height').value / 100;
+            BMI = weight / (height * height)
+            const para = document.getElementById('ans');
+            para.innerHTML = "Your BMI:  " + BMI.toFixed(2);
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personal Card</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      #main-card {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+      }
+      .left {
+        border: 2px solid black;
+        height: 30vh;
+        width: 45vh;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .left h2 {
+        margin-bottom: 5px;
+        color: #333;
+      }
+      .left h3 {
+        color: #667eea;
+        margin-bottom: 10px;
+      }
+      .left p {
+        font-size: 14px;
+        margin-bottom: 15px;
+        color: #666;
+      }
+      .right {
+        border: 2px solid black;
+        width: 30vh;
+        height: 30vh;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .imgs {
+        height: 100%;
+        width: 100%;
+      }
+      .contact h4 {
+        margin-bottom: 10px;
+        color: #333;
+      }
+      .contactLink {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        color: #667eea;
+        font-weight: 500;
+      }
+      .contactLink div {
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .contactLink div:hover {
+        color: #764ba2;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main-card">
+      <div class="left">
+        <h2>Tushar Tanwar</h2>
+        <h3>Full Stack Web Developer</h3>
+        <p>
+          As a Computer Science student with strong skills in Python, C, and
+          C++, I am eager to tackle diverse tech challenges and continually
+          enhance my programming expertise. My goal is to evolve from a B.Tech
+          student into a dynamic and innovative professional, making a
+          significant impact in the tech world.
+        </p>
+        <div class="contact">
+          <h4>Connect With Us</h4>
+          <div class="contactLink">
+            <div>LinkedIn</div>
+            <div>Github</div>
+            <div>Email</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

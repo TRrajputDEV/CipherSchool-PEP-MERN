@@ -1,0 +1,21 @@
+{
+  "name": "student_report_api",
+  "version": "1.0.0",
+  "description": "This is the assignment 3",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run dev",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "npm",
+    "node",
+    "dev"
+  ],
+  "author": "Tushar Tanwar",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.11"
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "email": "alice.johnson@example.com",
+    "course": "Computer Science"
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "email": "bob.smith@example.com",
+    "course": "Data Science"
+  },
+  {
+    "id": 3,
+    "name": "Carol White",
+    "email": "carol.white@example.com",
+    "course": "Web Development"
+  },
+  {
+    "id": 4,
+    "name": "David Brown",
+    "email": "david.brown@example.com",
+    "course": "Machine Learning"
+  },
+  {
+    "id": 5,
+    "name": "Emma Davis",
+    "email": "emma.davis@example.com",
+    "course": "Cloud Computing"
+  },
+  {
+    "id": 6,
+    "name": "Tushar Tanwar",
+    "email": "ttmail@gmail.com",
+    "course": "hehe"
+  }
+]

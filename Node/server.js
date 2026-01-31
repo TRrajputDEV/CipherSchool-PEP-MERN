@@ -1,14 +1,7 @@
-import http from "http";
-import fs from "fs";
+import express from "express";
 
-const server = http.createServer((req, res) => {
-    
-  const data = fs.readFileSync("./index.html", "utf-8");
-  res.writeHead(200, { "Content-Type": "text/html" });
-  res.write(data);
-  res.end();
-});
+const app = express();
 
-server.listen(8000, () => {
-  console.log("Server running at http://localhost:8000/");
+app.listen(3000, () => {
+  console.log("server is running at PORT 3000");
 });

@@ -53,7 +53,7 @@ app.put('/students/:id', (req, res) => {
     }
     
     const updatedData = req.body;
-    if (!updatedData.id || !updatedData.name) {
+    if (!updatedData.name) {
         return res.status(400).json({ message: "Invalid student data" });
     }
     
@@ -70,3 +70,5 @@ app.get("/", (req, res) => {
 app.listen(8000, () => {
   console.log("Server is Running at PORT 8000");
 });
+
+data.splice()

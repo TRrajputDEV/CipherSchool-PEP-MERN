@@ -1,15 +1,9 @@
 [
   {
     "id": 1,
-    "name": "Alice Johnson",
-    "email": "alice.johnson@example.com",
-    "course": "Computer Science"
-  },
-  {
-    "id": 2,
-    "name": "Bob Smith",
-    "email": "bob.smith@example.com",
-    "course": "Data Science"
+    "name": "Tushar Tanwar",
+    "email": "ttmail@gmail.com",
+    "course": "hehe"
   },
   {
     "id": 3,
@@ -30,8 +24,8 @@
     "course": "Cloud Computing"
   },
   {
-    "id": 6,
-    "name": "Tushar Tanwar",
+    "id": 2,
+    "name": "Tushar Rajput",
     "email": "ttmail@gmail.com",
     "course": "hehe"
   }

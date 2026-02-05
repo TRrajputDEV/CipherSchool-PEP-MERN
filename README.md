@@ -1,16 +1,16 @@
+
+> ⚠️ **Note to Reviewer:** Please read this README to see all the projects, screenshots, links, and code. All assignments are documented here in case you need quick access to any project details.
+
 # CipherSchool PEP MERN Course
-
-
 > **Student Name:** Tushar Tanwar  
 > **Registeration No :** 12319540
 > 
 > **Roll no :** 42
 
----
+
 ## Projects / Assignments
 
 ### Project 1: Portfolio Website
-
 **Description:**  A responsive personal portfolio website designed to showcase my technical skills, projects, and achievements in a professional format. It serves as a digital resume with integrated social links and a contact form for easy communication. The website focuses on clean UI, accessibility, and performance.
 
 **Features:**
@@ -25,7 +25,6 @@
 
 **Screenshots:**
 <img width="1918" height="931" alt="Screenshot From 2026-02-02 09-56-02" src="https://github.com/user-attachments/assets/92627815-49f5-4105-890b-ac04eb0154ab" />
-
 <img width="1918" height="931" alt="image" src="https://github.com/user-attachments/assets/02987994-8d4b-4043-85bb-48c52791a857" />
 
 **Project Link:** [View Project Code](https://github.com/TRrajputDEV/CipherSchool-PEP-MERN/tree/main/Assignments/Project_1)
@@ -33,7 +32,6 @@
 ---
 
 ### Project 2: BMI calculator
-
 **Description:**  A lightweight web-based Body Mass Index (BMI) calculator that allows users to quickly evaluate their health status based on height and weight inputs. The application performs real-time calculations using JavaScript and presents accurate results in a simple, user-friendly interface.
 
 **Features:**
@@ -47,16 +45,13 @@
 `HTML5` `CSS3` `JavaScript` `DOM Manipulation`
 
 **Screenshots:**
-
 <img width="1918" height="931" alt="image" src="https://github.com/user-attachments/assets/7d349313-7b4a-405a-ab03-0b27cff8ef45" />
-
 
 **Project Link:** [View Project Code](https://github.com/TRrajputDEV/CipherSchool-PEP-MERN/tree/main/Assignments/Project_2)
 
 ---
 
-### Project 3: Student Management REST API
-
+### Assignment 1: Student Management REST API
 **Description:**  A RESTful API built using Node.js and Express.js for managing student records. The system enables CRUD operations with persistent storage using a JSON file. It provides a lightweight backend solution for handling student data in small-scale applications.
 
 **Features:**
@@ -73,8 +68,29 @@
 **Screenshots:**
 <img width="1918" height="931" alt="Screenshot From 2026-02-02 11-12-05" src="https://github.com/user-attachments/assets/e9abe8ad-0304-429c-899d-dcac4dea0058" />
 
-
 **Project Link:** [View Project Code](https://github.com/TRrajputDEV/CipherSchool-PEP-MERN/tree/main/Assignments/Student_Report_API)
+
+---
+
+### Assignment 2: Complaint / Issue Tracker API
+**Description:**  A backend REST API built using Node.js and Express.js for handling complaints and issues. The system demonstrates proper Express routing, middleware implementation, and clean backend architecture with in-memory data storage using JavaScript arrays.
+
+**Features:**
+- Fetch all complaints (Public route)
+- Create new complaints (Public route)
+- Resolve complaints (Protected route with authentication)
+- Delete complaints (Protected route with authentication)
+- Logger middleware for tracking all HTTP requests
+- Auth middleware for protecting sensitive routes
+- Clean separation of routes and controllers
+
+**Tech Stack:**  
+`Node.js` `Express.js` `JavaScript` `ES Modules` `REST API` `Middleware`
+<img width="1920" height="1006" alt="image" src="https://github.com/user-attachments/assets/295c408b-c7b3-4766-9052-6f289fe2d444" />
+
+
+**Project Link:** [View Project Code](https://github.com/TRrajputDEV/CipherSchool-PEP-MERN/tree/main/Assignments/complaint-api)
+
 ---
 
 **Note to Reviewer:** All projects/assignments are organized in their respective folders. Click on the "View Code" links above to navigate directly to each project/assignment.

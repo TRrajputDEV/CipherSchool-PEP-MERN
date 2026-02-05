@@ -93,4 +93,47 @@
 
 ---
 
+## Minor Project: Online Complaint / Issue Tracker System
+
+**Description:**  
+A full-stack web application developed using HTML, CSS, JavaScript, Node.js, and Express.js. The system allows users to submit complaints and enables administrators to manage and resolve them. The project follows the academic requirement of using in-memory data storage without any database.
+
+### Objective
+To build a basic full-stack web application for managing online complaints without using any database.
+
+### Problem Statement
+Design and develop a web-based Online Complaint / Issue Tracker System where users can submit complaints and an admin can manage them. Complaints are stored using in-memory data structures. :contentReference[oaicite:1]{index=1}
+
+### Features
+
+#### User Module
+- Submit complaints through web form  
+- Auto-generated complaint ID  
+- Default status set to **pending**  
+- View complaint status  
+
+#### Admin Module
+- View all complaints  
+- Update complaint status (pending / resolved / rejected)  
+- Delete complaints  
+- Search and filter complaints  
+
+### Mandatory API Routes
+- `GET /complaints` – Get all complaints  
+- `GET /complaints/:id` – Get complaint by ID  
+- `POST /complaints` – Add new complaint  
+- `PUT /complaints/:id` – Update complaint status  
+- `DELETE /complaints/:id` – Delete complaint  
+
+### Technology Stack
+**Frontend:** `HTML` `CSS` `JavaScript`  
+**Backend:** `Node.js` `Express.js`  
+**Database:** Not Used (In-Memory Storage)
+
+<img width="1920" height="929" alt="Screenshot From 2026-02-05 15-23-01" src="https://github.com/user-attachments/assets/91b421c7-e85e-46d7-bcf9-f16360d6a4b2" />
+<img width="1920" height="929" alt="Screenshot From 2026-02-05 15-23-19" src="https://github.com/user-attachments/assets/cb122760-aadc-4cb2-b393-c06b898fbf5b" />
+
+**Project Link:** [View Project Code](https://github.com/TRrajputDEV/CipherSchool-PEP-MERN/tree/main/Minor-Project/Complaint-Issue-Tracker)
+
+
 **Note to Reviewer:** All projects/assignments are organized in their respective folders. Click on the "View Code" links above to navigate directly to each project/assignment.

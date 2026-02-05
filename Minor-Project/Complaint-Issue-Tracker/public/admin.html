@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Issue Tracker</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-content">
+        <h1>Issue Tracker</h1>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Submit Complaint</a>
+          <a href="admin.html" class="nav-link active">Admin Panel</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Complaint Management</h2>
+          <p class="card-description">
+            View, update, and manage all complaints
+          </p>
+        </div>
+
+        <div id="alertContainer"></div>
+        <div class="form-group">
+          <label for="searchId" class="form-label"
+            >Search by Complaint ID</label
+          >
+
+          <div style="display: flex; gap: 8px">
+            <input
+              type="text"
+              id="searchId"
+              class="form-input"
+              placeholder="Enter ID (e.g. CMP00001)"
+            />
+
+            <button onclick="searchById()" class="btn btn-secondary btn-sm">
+              Search
+            </button>
+
+            <button onclick="resetSearch()" class="btn btn-outline btn-sm">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="filterStatus" class="form-label">Filter by Status</label>
+          <select id="filterStatus" class="form-select">
+            <option value="all">All Complaints</option>
+            <option value="pending">Pending</option>
+            <option value="resolved">Resolved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div id="complaintsContainer">
+          <div class="loading">Loading complaints...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global variables
+      let allComplaints = [];
+
+      // Show alert message
+      function showAlert(message, type = "success") {
+        const alertContainer = document.getElementById("alertContainer");
+        alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+        setTimeout(() => {
+          alertContainer.innerHTML = "";
+        }, 3000);
+      }
+      let isSearching = false;
+
+      // Search complaint by ID
+      function searchById() {
+        const id = document.getElementById("searchId").value.trim();
+
+        if (!id) {
+          showAlert("Enter a complaint ID", "error");
+          return;
+        }
+
+        const found = allComplaints.find(
+          (c) => c.id.toLowerCase() === id.toLowerCase(),
+        );
+
+        if (!found) {
+          showAlert("No complaint found with this ID", "error");
+          return;
+        }
+
+        isSearching = true;
+        displaySingleComplaint(found);
+      }
+
+      // Reset search
+      function resetSearch() {
+        document.getElementById("searchId").value = "";
+        isSearching = false;
+        displayComplaints();
+      }
+
+      // Show single complaint
+      function displaySingleComplaint(complaint) {
+        const container = document.getElementById("complaintsContainer");
+
+        const html = `
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td><strong>${complaint.id}</strong></td>
+                        <td>${complaint.name}</td>
+                        <td>${complaint.email}</td>
+                        <td>${complaint.category}</td>
+                        <td>${complaint.description}</td>
+
+                        <td>
+                          <span class="badge badge-${complaint.status}">
+                            ${complaint.status}
+                          </span>
+                        </td>
+
+                        <td>${new Date(complaint.createdAt).toLocaleDateString()}</td>
+
+                        <td>
+                          <div class="actions">
+
+                            <button
+                              onclick="updateStatus('${complaint.id}', 'pending')"
+                              class="btn btn-sm btn-outline"
+                              ${complaint.status === "pending" ? "disabled" : ""}>
+                              ⟳ Pending
+                            </button>
+
+                            <button
+                              onclick="updateStatus('${complaint.id}', 'resolved')"
+                              class="btn btn-sm btn-secondary"
+                              ${complaint.status === "resolved" ? "disabled" : ""}>
+                              ✓ Resolve
+                            </button>
+
+                            <button
+                              onclick="updateStatus('${complaint.id}', 'rejected')"
+                              class="btn btn-sm btn-outline"
+                              ${complaint.status === "rejected" ? "disabled" : ""}>
+                              ✗ Reject
+                            </button>
+
+                            <button
+                              onclick="deleteComplaint('${complaint.id}')"
+                              class="btn btn-sm btn-destructive">
+                              🗑 Delete
+                            </button>
+
+                          </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+
+        container.innerHTML = html;
+      }
+
+      // Fetch all complaints
+      async function fetchComplaints() {
+        try {
+          const response = await fetch("/complaints");
+          if (!response.ok) throw new Error("Failed to fetch complaints");
+          allComplaints = await response.json();
+          displayComplaints();
+        } catch (error) {
+          document.getElementById("complaintsContainer").innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div class="empty-state-title">Error Loading Complaints</div>
+                        <div class="empty-state-description">${error.message}</div>
+                    </div>
+                `;
+        }
+      }
+
+      // Display complaints in table
+      function displayComplaints() {
+        const filterStatus = document.getElementById("filterStatus").value;
+        let filteredComplaints = allComplaints;
+
+        if (filterStatus !== "all") {
+          filteredComplaints = allComplaints.filter(
+            (c) => c.status === filterStatus,
+          );
+        }
+
+        const container = document.getElementById("complaintsContainer");
+
+        if (filteredComplaints.length === 0) {
+          container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-title">No Complaints Found</div>
+                        <div class="empty-state-description">There are no complaints matching your filter.</div>
+                    </div>
+                `;
+          return;
+        }
+
+        const tableHTML = `
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredComplaints
+                              .map(
+                                (complaint) => `
+                                <tr>
+                                    <td><strong>${complaint.id}</strong></td>
+                                    <td>${complaint.name}</td>
+                                    <td>${complaint.email}</td>
+                                    <td>${complaint.category}</td>
+                                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${complaint.description}">
+                                        ${complaint.description}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-${complaint.status}">${complaint.status}</span>
+                                    </td>
+                                    <td>${new Date(complaint.createdAt).toLocaleDateString()}</td>
+                                    <td>
+                                        <div class="actions">
+                                            ${
+                                              complaint.status !== "resolved"
+                                                ? `
+                                                <button onclick="updateStatus('${complaint.id}', 'resolved')" class="btn btn-sm btn-secondary">
+                                                    ✓ Resolve
+                                                </button>
+                                            `
+                                                : ""
+                                            }
+                                            ${
+                                              complaint.status !== "rejected"
+                                                ? `
+                                                <button onclick="updateStatus('${complaint.id}', 'rejected')" class="btn btn-sm btn-outline">
+                                                    ✗ Reject
+                                                </button>
+                                            `
+                                                : ""
+                                            }
+                                            ${
+                                              complaint.status !== "pending"
+                                                ? `
+                                                <button onclick="updateStatus('${complaint.id}', 'pending')" class="btn btn-sm btn-outline">
+                                                    ⟳ Pending
+                                                </button>
+                                            `
+                                                : ""
+                                            }
+                                            <button onclick="deleteComplaint('${complaint.id}')" class="btn btn-sm btn-destructive">
+                                                🗑 Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `,
+                              )
+                              .join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        container.innerHTML = tableHTML;
+      }
+
+      // Update complaint status
+      async function updateStatus(id, status) {
+        try {
+          const response = await fetch(`/complaints/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ status }),
+          });
+
+          if (!response.ok) throw new Error("Failed to update status");
+
+          showAlert(`Complaint ${id} status updated to ${status}`, "success");
+          await fetchComplaints();
+        } catch (error) {
+          showAlert(error.message, "error");
+        }
+      }
+
+      // Delete complaint
+      async function deleteComplaint(id) {
+        if (!confirm(`Are you sure you want to delete complaint ${id}?`)) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/complaints/${id}`, {
+            method: "DELETE",
+          });
+
+          if (!response.ok) throw new Error("Failed to delete complaint");
+
+          showAlert(`Complaint ${id} deleted successfully`, "success");
+          await fetchComplaints();
+        } catch (error) {
+          showAlert(error.message, "error");
+        }
+      }
+
+      // Event listeners
+      document
+        .getElementById("filterStatus")
+        .addEventListener("change", displayComplaints);
+
+      // Initial load
+      fetchComplaints();
+    </script>
+  </body>
+</html>

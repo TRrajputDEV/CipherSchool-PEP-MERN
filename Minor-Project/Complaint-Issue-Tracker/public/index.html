@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Complaint - Issue Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>Issue Tracker</h1>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link active">Submit Complaint</a>
+                <a href="admin.html" class="nav-link">Admin Panel</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Submit a Complaint</h2>
+                <p class="card-description">Fill out the form below to submit your complaint. You'll receive a unique complaint ID.</p>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <form id="complaintForm">
+                <div class="form-group">
+                    <label for="name" class="form-label">Full Name *</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        class="form-input" 
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address *</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="form-input" 
+                        placeholder="your.email@example.com"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="category" class="form-label">Category *</label>
+                    <select id="category" class="form-select" required>
+                        <option value="">Select a category</option>
+                        <option value="Technical">Technical Issue</option>
+                        <option value="Billing">Billing</option>
+                        <option value="Service">Service Quality</option>
+                        <option value="Product">Product Defect</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label">Description *</label>
+                    <textarea 
+                        id="description" 
+                        class="form-textarea" 
+                        placeholder="Provide detailed description of your complaint..."
+                        required
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit Complaint</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Your Recent Complaints</h2>
+                <p class="card-description">View complaints submitted from this browser</p>
+            </div>
+
+            <div id="userComplaints">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

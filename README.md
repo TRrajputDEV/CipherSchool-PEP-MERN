@@ -131,7 +131,8 @@ Design and develop a web-based Online Complaint / Issue Tracker System where use
 **Database:** Not Used (In-Memory Storage)
 
 <img width="1920" height="929" alt="Screenshot From 2026-02-05 15-23-01" src="https://github.com/user-attachments/assets/91b421c7-e85e-46d7-bcf9-f16360d6a4b2" />
-<img width="1920" height="929" alt="Screenshot From 2026-02-05 15-23-19" src="https://github.com/user-attachments/assets/cb122760-aadc-4cb2-b393-c06b898fbf5b" />
+<img width="1862" height="980" alt="Screenshot From 2026-02-06 15-10-38" src="https://github.com/user-attachments/assets/43420edd-2ca1-42b0-ba7b-77a808c4c001" />
+
 
 **Project Link:** [View Project Code](https://github.com/TRrajputDEV/CipherSchool-PEP-MERN/tree/main/Minor-Project/Complaint-Issue-Tracker)
 

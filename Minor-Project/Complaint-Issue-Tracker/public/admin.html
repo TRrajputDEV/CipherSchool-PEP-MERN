@@ -18,6 +18,33 @@
     </header>
 
     <div class="container">
+      <!-- Statistics Section -->
+      <div class="hero">
+        <div class="hero-content">
+          <div class="hero-description">
+            <h2>Complaints Overview</h2>
+            <p>Track and manage all complaints in one place</p>
+          </div>
+          <div class="hero-stats">
+            <div class="stat-card">
+              <div class="stat-number" id="totalComplaints">0</div>
+              <div class="stat-label">Total Complaints</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="pendingComplaints">0</div>
+              <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number resolved" id="resolvedComplaints">0</div>
+              <div class="stat-label">Resolved</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="rejectedComplaints">0</div>
+              <div class="stat-label">Rejected</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">Complaint Management</h2>
@@ -69,6 +96,25 @@
     <script>
       // Global variables
       let allComplaints = [];
+
+      // Update statistics
+      function updateStats() {
+        const total = allComplaints.length;
+        const pending = allComplaints.filter(
+          (c) => c.status === "pending",
+        ).length;
+        const resolved = allComplaints.filter(
+          (c) => c.status === "resolved",
+        ).length;
+        const rejected = allComplaints.filter(
+          (c) => c.status === "rejected",
+        ).length;
+
+        document.getElementById("totalComplaints").textContent = total;
+        document.getElementById("pendingComplaints").textContent = pending;
+        document.getElementById("resolvedComplaints").textContent = resolved;
+        document.getElementById("rejectedComplaints").textContent = rejected;
+      }
 
       // Show alert message
       function showAlert(message, type = "success") {
@@ -196,6 +242,7 @@
           const response = await fetch("/complaints");
           if (!response.ok) throw new Error("Failed to fetch complaints");
           allComplaints = await response.json();
+          updateStats();
           displayComplaints();
         } catch (error) {
           document.getElementById("complaintsContainer").innerHTML = `
@@ -324,6 +371,7 @@
 
           showAlert(`Complaint ${id} status updated to ${status}`, "success");
           await fetchComplaints();
+          updateStats();
         } catch (error) {
           showAlert(error.message, "error");
         }

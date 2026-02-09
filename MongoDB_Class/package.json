@@ -1,0 +1,19 @@
+{
+  "name": "mongodb_class",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "author": "Tushar Tanwar",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.1.6"
+  }
+}

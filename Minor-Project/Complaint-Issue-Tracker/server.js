@@ -14,14 +14,12 @@ app.use(express.json());
 const publicPath = path.join(__dirname, "public");
 app.use(express.static(publicPath));
 
-// Explicitly serve index.html at root (helps if someone opens / or static lookup fails)
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(publicPath, "index.html"));
 });
 
-/* -----------------------
-   In-memory complaint API
-   ----------------------- */
+
 let complaints = [];
 let nextId = 1;
 
@@ -81,9 +79,6 @@ app.delete("/complaints/:id", (req, res) => {
   res.json({ message: "Complaint deleted successfully" });
 });
 
-/* -----------------------
-   Error handler + start
-   ----------------------- */
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "Server error" });

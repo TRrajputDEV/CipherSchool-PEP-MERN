@@ -1,25 +1,27 @@
-import express from 'express'
-import connectDB from './db/index.js'
-import Book from './models/Book.model.js';
+import express from 'express';
+import connectDB from './db/index.js';
+import notesRoutes from './routes/notes.routes.js';
 
 const app = express();
+const PORT = 3000;
+
+// Middleware
 app.use(express.json());
 
 // Health check
-app.get('/', (req,res)=>{
-    res.send("API Working")
-})
-
-app.get("/books", async (req, res) => {
-  const books = await Book.find();
-  res.json(books);
+app.get('/', (req, res) => {
+  res.json({ message: "Notes API Working " });
 });
 
+// Routes
+app.use('/notes', notesRoutes);
+
+// Start server
 const startServer = async () => {
   await connectDB();
-  app.listen(3000, () =>
-    console.log(`Server running on port`)
-  );
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 };
 
 startServer();

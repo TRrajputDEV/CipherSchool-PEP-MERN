@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Font */
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap");
+
+:root {
+  --bg:       #0d0d0d;
+  --surface:  #161616;
+  --card:     #1e1e1e;
+  --border:   #2a2a2a;
+  --accent:   #ff3c3c;
+  --text:     #f0ede8;
+  --muted:    #6b6866;
+  --radius:   12px;
+  --display:  "Bebas Neue", sans-serif;
+  --body:     "DM Sans", sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  min-height: 100vh;
+}
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 2rem;
+  letter-spacing: 0.2em;
+}

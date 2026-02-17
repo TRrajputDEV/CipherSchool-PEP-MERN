@@ -1,46 +1,107 @@
 import { useState } from "react";
 import { reactConfession, updateConfession, deleteConfession } from "../api/api";
 
-// Reaction config
 const REACTIONS = [
-  { type: "like",  emoji: "👍", label: "Like"  },
-  { type: "love",  emoji: "❤️", label: "Love"  },
-  { type: "laugh", emoji: "😂", label: "Laugh" },
+  { type: "like",  label: "Like",  icon: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+      <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+    </svg>
+  )},
+  { type: "love",  label: "Love",  icon: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  )},
+  { type: "laugh", label: "Laugh", icon: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M8 13s1.5 2 4 2 4-2 4-2"/>
+      <line x1="9" y1="9" x2="9.01" y2="9"/>
+      <line x1="15" y1="9" x2="15.01" y2="9"/>
+    </svg>
+  )},
 ];
 
-// Small helper — how long ago was this posted?
 const timeAgo = (date) => {
   const diff = (Date.now() - new Date(date)) / 1000;
   if (diff < 60)    return "just now";
   if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const ConfessionCard = ({ confession, onUpdated, onDeleted }) => {
+const SecretInput = ({ value, onChange, placeholder }) => (
+  <div className="relative">
+    <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6e6c6a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+    <input
+      type="password"
+      autoComplete="off"
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder || "Secret code"}
+      className="w-full bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg text-[#eeebe6] placeholder-[#555250] text-xs pl-9 pr-4 py-2.5 outline-none focus:border-[#2a2a2a] transition-colors font-light"
+    />
+  </div>
+);
+
+const ActionButtons = ({ onCancel, onConfirm, confirmLabel, confirmClass, loading }) => (
+  <div className="flex gap-2 justify-end">
+    <button
+      type="button"
+      onClick={onCancel}
+      className="text-xs text-[#5a5856] border border-[#1e1e1e] px-4 py-2 rounded-lg hover:border-[#2a2a2a] hover:text-[#eeebe6] transition-all duration-150 active:scale-95"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      disabled={loading}
+      className={`text-xs font-medium px-4 py-2 rounded-lg transition-all duration-150 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 ${confirmClass}`}
+    >
+      {loading && <span className="spinner spinner-sm" />}
+      {confirmLabel}
+    </button>
+  </div>
+);
+
+const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) => {
   const [data, setData]         = useState(confession);
-  const [mode, setMode]         = useState("view"); // "view" | "edit" | "delete"
+  const [mode, setMode]         = useState("view");
   const [editText, setEditText] = useState(confession.text);
   const [secretCode, setSecretCode] = useState("");
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
 
-  // ── React ───────────────────────────────────────────────────
+  // Init from server — so reloading the page keeps your reactions correct
+  const [voted, setVoted] = useState(
+    new Set(confession.userReactions || [])
+  );
+  const [animating, setAnimating] = useState(null);
+
+  // ── React (toggle) ─────────────────────────────────────────
   const handleReact = async (type) => {
     try {
       const res = await reactConfession(data._id, type);
-      setData(res.data); // update reaction counts locally
+      // Server returns updated counts + which types this user has reacted to
+      setData(res.data);
+      setVoted(new Set(res.data.userReactions || []));
+      setAnimating(type);
+      setTimeout(() => setAnimating(null), 350);
     } catch (err) {
       console.error("Reaction failed:", err);
     }
   };
 
-  // ── Edit ────────────────────────────────────────────────────
+  // ── Edit ───────────────────────────────────────────────────
   const handleEdit = async (e) => {
     e.preventDefault();
     setError("");
     if (!secretCode) return setError("Enter your secret code.");
-
     setLoading(true);
     try {
       const res = await updateConfession(data._id, { text: editText, secretCode });
@@ -54,19 +115,17 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted }) => {
     }
   };
 
-  // ── Delete ───────────────────────────────────────────────────
+  // ── Delete ─────────────────────────────────────────────────
   const handleDelete = async (e) => {
     e.preventDefault();
     setError("");
     if (!secretCode) return setError("Enter your secret code.");
-
     setLoading(true);
     try {
       await deleteConfession(data._id, secretCode);
       onDeleted(data._id);
     } catch (err) {
       setError(err.response?.data?.message || "Delete failed.");
-    } finally {
       setLoading(false);
     }
   };
@@ -78,127 +137,147 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted }) => {
     setEditText(data.text);
   };
 
-  return (
-    <div className="bg-[#161616] border border-[#2a2a2a] rounded-xl p-5 flex flex-col gap-3 transition hover:border-[#333]">
+  const totalReactions = data.reactions.like + data.reactions.love + data.reactions.laugh;
 
-      {/* Top row — anonymous badge + time */}
+  return (
+    <article className="group bg-[#141414] border border-[#1a1a1a] rounded-2xl p-5 flex flex-col gap-3.5 transition-all duration-200 hover:border-[#242424]">
+
+      {/* Top row */}
       <div className="flex items-center justify-between">
-        <span className="text-xs tracking-widest text-[#6b6866]">👤 Anonymous</span>
-        <span className="text-xs text-[#6b6866]">{timeAgo(data.createdAt)}</span>
+        <div className="flex items-center gap-2">
+          {/* Anon avatar placeholder */}
+          <div className="w-6 h-6 rounded-full bg-[#1e1e1e] border border-[#242424] flex items-center justify-center shrink-0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6e6c6a" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <span className="text-[11px] text-[#6e6c6a] tracking-wide font-light">Anonymous</span>
+        </div>
+        <time className="text-[11px] text-[#555250] tabular-nums">{timeAgo(data.createdAt)}</time>
       </div>
 
-      {/* ── VIEW mode ─────────────────────────────────────────── */}
+      {/* ── VIEW ───────────────────────────────────────────── */}
       {mode === "view" && (
         <>
-          <p className="text-sm text-[#f0ede8] leading-relaxed">{data.text}</p>
+          <p className="text-sm text-[#d8d5d0] leading-relaxed font-light">{data.text}</p>
 
-          {/* Reactions + action buttons */}
-          <div className="flex items-center justify-between flex-wrap gap-3 pt-1">
-            {/* Reaction buttons */}
-            <div className="flex gap-2">
-              {REACTIONS.map(({ type, emoji, label }) => (
+          {/* Bottom row */}
+          <div className="flex items-center justify-between gap-3 flex-wrap pt-0.5">
+            {/* Reactions */}
+            <div className="flex items-center gap-1.5">
+              {REACTIONS.map(({ type, label, icon }) => {
+                const hasVoted = voted.has(type);
+                const isAnimating = animating === type;
+                return (
+                  <button
+                    key={type}
+                    onClick={() => isAuthenticated && handleReact(type)}
+                    title={
+                      !isAuthenticated
+                        ? "Sign in to react"
+                        : hasVoted
+                          ? `Remove ${label}`
+                          : label
+                    }
+                    className={`
+                      flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-full border
+                      transition-all duration-150
+                      ${!isAuthenticated ? "cursor-default opacity-50" : "cursor-pointer active:scale-95"}
+                      ${hasVoted
+                        ? "border-[#ff3c3c] text-[#ff3c3c] bg-[rgba(255,60,60,0.08)]"
+                        : "border-[#1e1e1e] text-[#5a5856] hover:border-[#2a2a2a] hover:text-[#eeebe6]"
+                      }
+                      ${isAnimating ? "reaction-pop" : ""}
+                    `}
+                  >
+                    <span className={hasVoted ? "text-[#ff3c3c]" : "text-[#6e6c6a]"}>
+                      {icon}
+                    </span>
+                    <span className="tabular-nums">{data.reactions[type]}</span>
+                  </button>
+                );
+              })}
+              {totalReactions > 0 && (
+                <span className="text-[10px] text-[#555250] ml-1 tabular-nums">{totalReactions}</span>
+              )}
+            </div>
+
+            {/* Edit / Delete — only for logged-in users */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <button
-                  key={type}
-                  onClick={() => handleReact(type)}
-                  className="flex items-center gap-1.5 text-xs text-[#6b6866] bg-[#1e1e1e] border border-[#2a2a2a] px-3 py-1.5 rounded-full hover:border-[#444] hover:text-[#f0ede8] transition"
+                  onClick={() => { setMode("edit"); setError(""); }}
+                  className="text-[11px] text-[#6e6c6a] hover:text-[#eeebe6] px-2.5 py-1.5 rounded-lg hover:bg-[#1a1a1a] transition-all duration-150"
                 >
-                  <span>{emoji}</span>
-                  <span>{data.reactions[type]}</span>
+                  Edit
                 </button>
-              ))}
-            </div>
-
-            {/* Edit / Delete toggles */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => { setMode("edit"); setError(""); }}
-                className="text-xs text-[#6b6866] hover:text-[#f0ede8] transition px-2 py-1"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => { setMode("delete"); setError(""); }}
-                className="text-xs text-[#ff3c3c] hover:text-red-400 transition px-2 py-1"
-              >
-                Delete
-              </button>
-            </div>
+                <button
+                  onClick={() => { setMode("delete"); setError(""); }}
+                  className="text-[11px] text-[#6e6c6a] hover:text-[#ff3c3c] px-2.5 py-1.5 rounded-lg hover:bg-[rgba(255,60,60,0.06)] transition-all duration-150"
+                >
+                  Delete
+                </button>
+              </div>
+            ) : (
+              /* Guest nudge */
+              <span className="text-[10px] text-[#2a2a2a] font-light opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                Sign in to react
+              </span>
+            )}
           </div>
         </>
       )}
 
-      {/* ── EDIT mode ─────────────────────────────────────────── */}
+      {/* ── EDIT ───────────────────────────────────────────── */}
       {mode === "edit" && (
-        <form onSubmit={handleEdit} className="flex flex-col gap-3">
+        <form onSubmit={handleEdit} className="flex flex-col gap-3 anim-slide-down">
           <textarea
             rows={3}
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
-            className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg text-[#f0ede8] text-sm px-4 py-3 resize-y outline-none focus:border-[#ff3c3c] transition"
+            className="w-full bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl text-[#eeebe6] text-sm px-4 py-3 resize-none outline-none focus:border-[#2a2a2a] transition-colors leading-relaxed font-light"
           />
-          <input
-            type="password"
-            autoComplete="off"
+          <SecretInput
             value={secretCode}
             onChange={(e) => setSecretCode(e.target.value)}
-            placeholder="🔑 Enter secret code to confirm"
-            className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg text-[#f0ede8] placeholder-[#6b6866] text-sm px-4 py-2.5 outline-none focus:border-[#ff3c3c] transition"
+            placeholder="Enter secret code to save"
           />
-          {error && <p className="text-xs text-[#ff3c3c]">{error}</p>}
-          <div className="flex gap-2 justify-end">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="text-xs text-[#6b6866] border border-[#2a2a2a] px-4 py-2 rounded-lg hover:border-[#444] transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="text-xs bg-[#f0ede8] text-[#111] font-semibold px-4 py-2 rounded-lg hover:opacity-85 transition disabled:opacity-40"
-            >
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
+          {error && (
+            <p className="text-xs text-[#ff3c3c] anim-fade-in">{error}</p>
+          )}
+          <ActionButtons
+            onCancel={resetForm}
+            confirmLabel="Save changes"
+            confirmClass="bg-[#eeebe6] text-[#111] hover:bg-white"
+            loading={loading}
+          />
         </form>
       )}
 
-      {/* ── DELETE mode ───────────────────────────────────────── */}
+      {/* ── DELETE ─────────────────────────────────────────── */}
       {mode === "delete" && (
-        <form onSubmit={handleDelete} className="flex flex-col gap-3">
-          <p className="text-xs text-[#ff3c3c] bg-[rgba(255,60,60,0.06)] border border-[rgba(255,60,60,0.15)] px-3 py-2 rounded-lg">
-            ⚠️ Enter your secret code to permanently delete this confession.
+        <form onSubmit={handleDelete} className="flex flex-col gap-3 anim-slide-down">
+          <p className="text-xs text-[#5a5856] leading-relaxed border border-[#1e1e1e] rounded-lg px-3.5 py-2.5 bg-[#0d0d0d]">
+            This will permanently remove your confession. Enter your secret code to confirm.
           </p>
-          <input
-            type="password"
-            autoComplete="off"
+          <SecretInput
             value={secretCode}
             onChange={(e) => setSecretCode(e.target.value)}
-            placeholder="🔑 Secret code"
-            className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg text-[#f0ede8] placeholder-[#6b6866] text-sm px-4 py-2.5 outline-none focus:border-[#ff3c3c] transition"
+            placeholder="Enter secret code to delete"
           />
-          {error && <p className="text-xs text-[#ff3c3c]">{error}</p>}
-          <div className="flex gap-2 justify-end">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="text-xs text-[#6b6866] border border-[#2a2a2a] px-4 py-2 rounded-lg hover:border-[#444] transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="text-xs bg-[#ff3c3c] text-white font-semibold px-4 py-2 rounded-lg hover:opacity-85 transition disabled:opacity-40"
-            >
-              {loading ? "Deleting..." : "Delete"}
-            </button>
-          </div>
+          {error && (
+            <p className="text-xs text-[#ff3c3c] anim-fade-in">{error}</p>
+          )}
+          <ActionButtons
+            onCancel={resetForm}
+            confirmLabel="Delete"
+            confirmClass="bg-[#ff3c3c] text-white hover:bg-[#e53535]"
+            loading={loading}
+          />
         </form>
       )}
-
-    </div>
+    </article>
   );
 };
 

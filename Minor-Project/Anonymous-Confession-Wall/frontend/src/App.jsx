@@ -1,21 +1,26 @@
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 
-// Inner component has access to auth context
 const AppContent = () => {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
+  // Always show HomePage — confessions are public.
+  // Loading state is handled inside HomePage itself.
   if (loading) {
     return (
       <div className="loading-screen">
-        <span>Loading...</span>
+        <div className="spinner" />
+        <span
+          style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+          className="text-[#3a3836] tracking-[0.25em] text-xs"
+        >
+          LOADING
+        </span>
       </div>
     );
   }
 
-  // If no user → show login, otherwise show the wall
-  return user ? <HomePage /> : <LoginPage />;
+  return <HomePage />;
 };
 
 const App = () => (

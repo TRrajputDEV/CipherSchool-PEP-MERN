@@ -15,9 +15,11 @@ const confessionSchema = new mongoose.Schema(
     },
 
     reactions: {
-      like:  { type: Number, default: 0 },
-      love:  { type: Number, default: 0 },
-      laugh: { type: Number, default: 0 },
+      // Each field stores an array of googleIds who reacted.
+      // Count = array length. Toggle = add or remove the userId.
+      like:  { type: [String], default: [] },
+      love:  { type: [String], default: [] },
+      laugh: { type: [String], default: [] },
     },
 
     // Google account ID of the poster

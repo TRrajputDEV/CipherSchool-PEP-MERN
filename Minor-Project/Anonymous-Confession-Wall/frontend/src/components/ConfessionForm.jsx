@@ -78,7 +78,7 @@ const ConfessionForm = ({ onCreated }) => {
       )}
 
       {/* Hint */}
-      <p className="text-xs text-[#6b6866] leading-relaxed">
+      <p className="text-xs text-[#cfcfcf] leading-relaxed">
         💡 Remember your secret code — you'll need it to edit or delete this confession.
       </p>
     </form>

@@ -42,7 +42,7 @@ const Header = () => {
             </div>
 
             {/* Name — hidden on small screens */}
-            <span className="text-xs text-[#6e6c6a] hidden sm:block truncate max-w-[140px] font-light">
+            <span className="text-xs text-[#fffffe] hidden sm:block truncate max-w-[140px] font-light">
               {user.displayName}
             </span>
 
@@ -50,7 +50,7 @@ const Header = () => {
             <button
               onClick={logout}
               className="
-                shrink-0 text-xs text-[#6e6c6a] border border-[#1e1e1e]
+                shrink-0 text-xs text-[#fff4e8] border border-[#b66d6d]
                 px-3 py-1.5 rounded-lg
                 transition-all duration-150
                 hover:border-[#ff3c3c] hover:text-[#ff3c3c]

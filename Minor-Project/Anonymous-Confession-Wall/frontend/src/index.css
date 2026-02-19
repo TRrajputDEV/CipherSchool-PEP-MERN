@@ -2,106 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap");
+/* Elegant Typography */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap');
 
-/* ── Variables ───────────────────────────────────────────── */
 :root {
-  --bg:       #0d0d0d;
-  --surface:  #141414;
-  --card:     #1a1a1a;
-  --border:   #2a2a2a;
-  --border-2: #363636;
-  --accent:   #ff3c3c;
-  --accent-d: #cc2e2e;
-  --text:     #f2f0ec;
-  --muted:    #8a8784;
-  --muted-2:  #5c5a58;
-  --display:  "Bebas Neue", sans-serif;
-  --body:     "DM Sans", sans-serif;
+  --bg: #030303;
+  --surface: #0a0a0a;
+  --surface-hover: #121212;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --text-main: #ffffff;
+  --text-muted: #888888;
+  --accent: #ffffff;
+  
+  --font-serif: 'Cormorant Garamond', serif;
+  --font-sans: 'Inter', sans-serif;
 }
 
-/* ── Reset ───────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
-  color: var(--text);
-  font-family: var(--body);
-  font-size: 15px;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 14px;
   line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Scrollbar ───────────────────────────────────────────── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+/* Minimalist Scrollbar */
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* ── Keyframes ───────────────────────────────────────────── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* Elegant Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.98); }
   to   { opacity: 1; transform: scale(1); }
 }
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes reactionPop {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.25); }
-  100% { transform: scale(1); }
-}
 
-/* ── Animation utility classes ───────────────────────────── */
-.anim-fade-up    { animation: fadeUp   0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.anim-fade-in    { animation: fadeIn   0.35s ease both; }
-.anim-scale-in   { animation: scaleIn  0.3s  cubic-bezier(0.22, 1, 0.36, 1) both; }
-.anim-slide-down { animation: slideDown 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-fade-in { animation: fadeIn 0.6s ease-out both; }
+.anim-slide-up { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-scale-in { animation: scaleIn 0.4s ease-out both; }
 
 /* Stagger delays */
 .delay-0 { animation-delay: 0ms; }
-.delay-1 { animation-delay: 55ms; }
-.delay-2 { animation-delay: 110ms; }
-.delay-3 { animation-delay: 165ms; }
-.delay-4 { animation-delay: 220ms; }
-.delay-5 { animation-delay: 275ms; }
-.delay-6 { animation-delay: 330ms; }
+.delay-1 { animation-delay: 100ms; }
+.delay-2 { animation-delay: 200ms; }
 
-/* Reaction pop */
-.reaction-pop { animation: reactionPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-
-/* Loading spinner */
+/* Subtle Loading Spinner */
 .spinner {
-  width: 22px; height: 22px;
-  border: 2px solid var(--border-2);
+  width: 16px; height: 16px;
+  border: 1px solid var(--border);
   border-top-color: var(--accent);
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: spin 0.8s linear infinite;
   display: inline-block;
-  flex-shrink: 0;
 }
-.spinner-sm { width: 15px; height: 15px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* Loading screen */
-.loading-screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background: var(--bg);
-  flex-direction: column;
-  gap: 1.25rem;
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

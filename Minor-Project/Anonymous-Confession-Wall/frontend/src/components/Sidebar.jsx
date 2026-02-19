@@ -1,191 +1,181 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import ConfessionForm from "./ConfessionForm";
 
-const Sidebar = ({ onConfessionCreated }) => {
+const Sidebar = ({ onOpenModal }) => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [showForm, setShowForm] = useState(false);
 
   const handleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
   };
 
-  const handleFormSuccess = (newItem) => {
-    setShowForm(false);
-    onConfessionCreated?.(newItem);
-  };
-
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 flex items-center justify-center bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#eeebe6" strokeWidth="2">
-          {isOpen ? (
-            <path d="M18 6L6 18M6 6l12 12"/>
-          ) : (
-            <path d="M3 12h18M3 6h18M3 18h18"/>
-          )}
-        </svg>
-      </button>
+      {/* Mobile Menu Button - Styled like a taped note */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="lg:hidden fixed top-5 left-5 z-40 w-12 h-10 flex items-center justify-center bg-[#111] border border-white/10 shadow-lg transition-transform active:scale-95 group"
+        >
+          {/* Tiny tape on the mobile button */}
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-3 bg-white/10 backdrop-blur-md rotate-[-5deg]" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eee" strokeWidth="1.5">
+            <path d="M4 12h16M4 6h16M4 18h16" />
+          </svg>
+        </button>
+      )}
 
-      {/* Overlay for mobile */}
+      {/* Mobile Overlay with heavy dark blur */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-72 bg-[#0d0d0d] border-r border-[#1a1a1a]
-          flex flex-col z-40 transition-transform duration-300 overflow-y-auto
+          fixed top-0 left-0 h-full w-72 bg-[#0a0a0a] border-r border-white/10 shadow-[8px_0_30px_rgba(0,0,0,0.8)]
+          flex flex-col z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        {/* Brand */}
-        <div className="p-6 border-b border-[#1a1a1a] shrink-0">
-          <div className="flex items-center gap-2.5">
-            <svg
-              width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="#ff3c3c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
+        {/* Subtle Paper Texture for the whole Sidebar */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
+
+        {/* ── HEADER: The Case File ── */}
+        <div className="px-8 pt-12 pb-8 shrink-0 relative z-10 flex justify-between items-start">
+          
+          {/* Tape holding the header */}
+          <div className="absolute top-4 left-6 w-16 h-6 bg-white/10 backdrop-blur-md rotate-[4deg] shadow-sm pointer-events-none z-20" />
+          
+          <div className="flex flex-col relative z-10 pt-2">
+            <span className="text-[#888] text-[9px] tracking-[0.3em] font-mono mb-1">
+              FILE NO. 001
+            </span>
             <span
-              className="text-[#f2f0ec] tracking-[0.08em] text-sm"
-              style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.1rem" }}
+              className="text-red-600 tracking-[0.2em] text-3xl font-light italic"
+              style={{ fontFamily: 'var(--font-serif)' }}
             >
-              CONFESSION WALL
+              String
+            </span>
+            <span className="text-[#555] text-[10px] tracking-[0.2em] uppercase mt-2 border-b border-dashed border-[#333] pb-1 inline-block">
+              Classified Dossier
             </span>
           </div>
+
+          <button
+            onClick={() => setIsOpen(false)}
+            className="lg:hidden text-[#555] hover:text-white transition-colors mt-2"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        {/* Add Confession Section */}
+        {/* ── CTA: Add Evidence ── */}
         {user && (
-          <div className="p-4 border-b border-[#1a1a1a] shrink-0">
-            {!showForm ? (
-              <button
-                onClick={() => setShowForm(true)}
-                className="
-                  w-full flex items-center justify-center gap-2
-                  bg-[#ff3c3c] text-white font-medium text-sm
-                  py-3 px-4 rounded-xl
-                  transition-all duration-150
-                  hover:bg-[#e53535] hover:shadow-[0_0_24px_rgba(255,60,60,0.15)]
-                  active:scale-[0.98]
-                "
-                style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.05em" }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                New Confession
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span
-                    className="text-[0.7rem] tracking-[0.2em] text-[#ff3c3c]"
-                    style={{ fontFamily: "'Bebas Neue', sans-serif" }}
-                  >
-                    NEW CONFESSION
-                  </span>
-                  <button
-                    onClick={() => setShowForm(false)}
-                    className="text-[#8a8784] hover:text-[#f2f0ec] transition"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M18 6L6 18M6 6l12 12"/>
-                    </svg>
-                  </button>
-                </div>
-                <ConfessionForm onCreated={handleFormSuccess} compact />
-              </div>
-            )}
+          <div className="px-8 pb-8 shrink-0 relative z-10">
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                onOpenModal();
+              }}
+              className="
+                group relative w-full flex items-center justify-center gap-3
+                bg-[#111] text-[#eee] font-bold text-xs py-4 px-4
+                border-2 border-dashed border-white/20
+                transition-all duration-300
+                hover:bg-white hover:text-black hover:border-solid hover:border-white
+                active:scale-[0.98]
+              "
+              style={{ fontFamily: 'var(--font-sans)', tracking: '0.1em', textTransform: 'uppercase' }}
+            >
+              {/* Corner Tape on Button */}
+              <div className="absolute -top-2 -right-2 w-8 h-4 bg-white/20 backdrop-blur-md rotate-45 pointer-events-none transition-opacity group-hover:opacity-0" />
+              
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Log Evidence
+            </button>
           </div>
         )}
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 overflow-y-auto">
-          <ul className="space-y-1">
+        {/* ── NAVIGATION: Index Tabs ── */}
+        <nav className="flex-1 px-8 py-2 overflow-y-auto relative z-10">
+          <span className="text-[#444] text-[9px] font-mono tracking-widest mb-4 block">INDEX</span>
+          <ul className="space-y-4">
             <li>
               <a
                 href="/"
-                className="flex items-center gap-3 px-3 py-2.5 text-sm text-[#f2f0ec] bg-[rgba(255,60,60,0.1)] border-l-2 border-[#ff3c3c] rounded-r-lg"
+                className="group flex items-center gap-4 text-sm text-[#eee] transition-all"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                Home
+                <span className="w-1.5 h-1.5 bg-white rounded-full opacity-100 group-hover:scale-150 transition-transform" />
+                <span className="tracking-widest uppercase text-xs font-bold" style={{ fontFamily: 'var(--font-serif)' }}>The Board</span>
               </a>
             </li>
             {user && (
               <li>
                 <a
                   href="/profile"
-                  className="flex items-center gap-3 px-3 py-2.5 text-sm text-[#8a8784] hover:text-[#f2f0ec] hover:bg-[#1a1a1a] rounded-lg transition"
+                  className="group flex items-center gap-4 text-sm text-[#777] hover:text-[#eee] transition-all"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                  Profile
+                  <span className="w-1.5 h-1.5 bg-[#444] group-hover:bg-white rounded-full transition-colors" />
+                  <span className="tracking-widest uppercase text-xs font-bold" style={{ fontFamily: 'var(--font-serif)' }}>My Logs</span>
                 </a>
               </li>
             )}
           </ul>
         </nav>
 
-        {/* User section */}
-        <div className="p-4 border-t border-[#1a1a1a] shrink-0">
+        {/* ── USER PROFILE: Polaroid Style ── */}
+        <div className="p-8 shrink-0 relative z-10 border-t border-dashed border-white/10">
           {user ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="relative shrink-0">
-                  <img
-                    src={user.avatar}
-                    alt={user.displayName}
-                    className="w-9 h-9 rounded-full border border-[#2a2a2a]"
-                  />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#22c55e] rounded-full border-2 border-[#0d0d0d]"/>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs text-[#f2f0ec] font-medium truncate">
-                    {user.displayName}
-                  </span>
-                  <span className="text-[10px] text-[#5c5a58]">Online</span>
-                </div>
-              </div>
-              <button
-                onClick={logout}
-                className="shrink-0 text-[#8a8784] hover:text-[#ff3c3c] transition p-1.5"
-                title="Sign out"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                  <polyline points="16 17 21 12 16 7"/>
-                  <line x1="21" y1="12" x2="9" y2="12"/>
+            <div className="relative group">
+              
+              {/* Paperclip graphic holding the photo */}
+              <div className="absolute -top-5 left-4 z-20 text-[#666] rotate-12 pointer-events-none">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
-              </button>
+              </div>
+
+              <div className="flex items-center justify-between bg-[#050505] p-3 border border-white/10 shadow-md transform rotate-[-1deg] transition-transform group-hover:rotate-0">
+                <div className="flex items-center gap-4 min-w-0">
+                  
+                  {/* Polaroid Photo Frame */}
+                  <div className="w-10 h-10 bg-white p-0.5 shadow-sm flex items-center justify-center shrink-0 rotate-[3deg]">
+                     <img src={user.avatar} alt="User" className="w-full h-full object-cover grayscale contrast-125" />
+                  </div>
+                  
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[#888] text-[8px] font-mono tracking-widest uppercase">Agent</span>
+                    <span className="text-xs text-[#eee] font-bold truncate tracking-wider" style={{ fontFamily: 'var(--font-serif)' }}>
+                      {user.displayName}
+                    </span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={logout}
+                  className="text-[#555] hover:text-[#ff4444] transition-colors p-2"
+                  title="Sign out / Burn Burner"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           ) : (
             <button
               onClick={handleLogin}
-              className="w-full flex items-center justify-center gap-2 bg-[#ff3c3c] text-white text-sm font-medium py-2.5 px-4 rounded-lg hover:bg-[#e53535] transition"
+              className="w-full flex items-center justify-center gap-3 bg-transparent border border-white/20 text-white text-[10px] font-bold tracking-widest uppercase py-4 px-4 hover:bg-white hover:text-black transition-all duration-300"
             >
-              <svg width="14" height="14" viewBox="0 0 48 48">
-                <path fill="currentColor" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-              </svg>
-              Sign in
+              Authenticate to Enter
             </button>
           )}
         </div>

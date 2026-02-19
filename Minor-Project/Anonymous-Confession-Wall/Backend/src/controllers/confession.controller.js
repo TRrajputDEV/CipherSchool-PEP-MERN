@@ -1,10 +1,16 @@
 import bcrypt from "bcryptjs";
 import Confession from "../models/confession.model.js";
 
+// Predefined tags
+const PREDEFINED_TAGS = [
+  "relationship", "work", "family", "friendship", "secret",
+  "regret", "confession", "advice", "rant", "achievement"
+];
+
 // ── POST /api/confessions ────────────────────────────────────
 const createConfession = async (req, res) => {
   try {
-    const { text, secretCode } = req.body;
+    const { text, secretCode, tags = [], status = "published" } = req.body;
 
     if (!text?.trim()) {
       return res.status(400).json({ message: "Confession text is required." });
@@ -13,23 +19,33 @@ const createConfession = async (req, res) => {
       return res.status(400).json({ message: "Secret code must be at least 4 characters." });
     }
 
+    // Normalize tags: lowercase, trim, max 5
+    const normalizedTags = tags
+      .map((t) => t.toLowerCase().trim())
+      .filter((t) => t.length > 0)
+      .slice(0, 5);
+
     const hashedCode = await bcrypt.hash(secretCode, 10);
 
     const confession = await Confession.create({
       text: text.trim(),
       secretCode: hashedCode,
       userId: req.user.googleId,
+      tags: normalizedTags,
+      status: status === "draft" ? "draft" : "published",
     });
 
-    // Return the exact same shape the frontend expects from getAllConfessions
-    // reactions as counts, userReactions as empty array (creator hasn't reacted yet)
     return res.status(201).json({
-      _id:          confession._id,
-      text:         confession.text,
-      userId:       confession.userId,
-      createdAt:    confession.createdAt,
-      updatedAt:    confession.updatedAt,
-      reactions:    { like: 0, love: 0, laugh: 0 },
+      _id: confession._id,
+      text: confession.text,
+      userId: confession.userId,
+      tags: confession.tags,
+      status: confession.status,
+      commentCount: 0,
+      viewCount: 0,
+      createdAt: confession.createdAt,
+      updatedAt: confession.updatedAt,
+      reactions: { like: 0, love: 0, laugh: 0 },
       userReactions: [],
     });
   } catch (err) {
@@ -41,32 +57,58 @@ const createConfession = async (req, res) => {
 const getAllConfessions = async (req, res) => {
   try {
     const userId = req.user?.googleId || null;
-    const confessions = await Confession.find()
-      .select("-secretCode")
-      .sort({ createdAt: -1 });
+    const { tag, search, page = 1, limit = 12 } = req.query;
 
-    // Shape each confession: send counts + which types the current user reacted to
-    const shaped = confessions.map((c) => {
-      const validTypes = ["like", "love", "laugh"];
-      return {
-        _id:       c._id,
-        text:      c.text,
-        userId:    c.userId,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt,
-        reactions: {
-          like:  c.reactions.like.length,
-          love:  c.reactions.love.length,
-          laugh: c.reactions.laugh.length,
-        },
-        // Which types the requesting user has already reacted to
-        userReactions: userId
-          ? validTypes.filter((t) => c.reactions[t].includes(userId))
-          : [],
-      };
+    const query = { status: "published" };
+
+    // Filter by tag
+    if (tag) query.tags = tag.toLowerCase();
+
+    // Search in text
+    if (search) {
+      query.text = { $regex: search, $options: "i" };
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [confessions, total] = await Promise.all([
+      Confession.find(query)
+        .select("-secretCode")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      Confession.countDocuments(query),
+    ]);
+
+    const validTypes = ["like", "love", "laugh"];
+    const shaped = confessions.map((c) => ({
+      _id: c._id,
+      text: c.text,
+      userId: c.userId,
+      tags: c.tags,
+      commentCount: c.commentCount,
+      viewCount: c.viewCount,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+      reactions: {
+        like: c.reactions.like.length,
+        love: c.reactions.love.length,
+        laugh: c.reactions.laugh.length,
+      },
+      userReactions: userId
+        ? validTypes.filter((t) => c.reactions[t].includes(userId))
+        : [],
+    }));
+
+    return res.status(200).json({
+      confessions: shaped,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit)),
+      },
     });
-
-    return res.status(200).json(shaped);
   } catch (err) {
     return res.status(500).json({ message: "Server error.", error: err.message });
   }
@@ -75,7 +117,7 @@ const getAllConfessions = async (req, res) => {
 // ── PUT /api/confessions/:id ─────────────────────────────────
 const updateConfession = async (req, res) => {
   try {
-    const { text, secretCode } = req.body;
+    const { text, secretCode, tags, status } = req.body;
     const userId = req.user.googleId;
 
     if (!secretCode) {
@@ -93,20 +135,31 @@ const updateConfession = async (req, res) => {
     }
 
     if (text?.trim()) confession.text = text.trim();
+    if (tags) {
+      confession.tags = tags
+        .map((t) => t.toLowerCase().trim())
+        .filter((t) => t.length > 0)
+        .slice(0, 5);
+    }
+    if (status) confession.status = status;
+
     await confession.save();
 
     const validTypes = ["like", "love", "laugh"];
 
-    // Same consistent shape as getAllConfessions and createConfession
     return res.status(200).json({
-      _id:          confession._id,
-      text:         confession.text,
-      userId:       confession.userId,
-      createdAt:    confession.createdAt,
-      updatedAt:    confession.updatedAt,
+      _id: confession._id,
+      text: confession.text,
+      userId: confession.userId,
+      tags: confession.tags,
+      status: confession.status,
+      commentCount: confession.commentCount,
+      viewCount: confession.viewCount,
+      createdAt: confession.createdAt,
+      updatedAt: confession.updatedAt,
       reactions: {
-        like:  confession.reactions.like.length,
-        love:  confession.reactions.love.length,
+        like: confession.reactions.like.length,
+        love: confession.reactions.love.length,
         laugh: confession.reactions.laugh.length,
       },
       userReactions: validTypes.filter((t) =>
@@ -132,7 +185,6 @@ const deleteConfession = async (req, res) => {
       return res.status(404).json({ message: "Confession not found." });
     }
 
-    // Verify secret code
     const isMatch = await bcrypt.compare(secretCode, confession.secretCode);
     if (!isMatch) {
       return res.status(403).json({ message: "Incorrect secret code." });
@@ -148,7 +200,7 @@ const deleteConfession = async (req, res) => {
 // ── POST /api/confessions/:id/react ─────────────────────────
 const reactToConfession = async (req, res) => {
   try {
-    const { type } = req.body; // "like" | "love" | "laugh"
+    const { type } = req.body;
     const userId = req.user.googleId;
 
     const validTypes = ["like", "love", "laugh"];
@@ -164,41 +216,44 @@ const reactToConfession = async (req, res) => {
     const alreadyReacted = confession.reactions[type].includes(userId);
 
     if (alreadyReacted) {
-      // Unlike — remove userId from the array
       confession.reactions[type] = confession.reactions[type].filter(
         (id) => id !== userId
       );
     } else {
-      // Like — add userId to the array
       confession.reactions[type].push(userId);
     }
 
     await confession.save();
 
-    // Return counts (not the raw arrays) so the frontend stays simple
     const safeReactions = {
-      like:  confession.reactions.like.length,
-      love:  confession.reactions.love.length,
+      like: confession.reactions.like.length,
+      love: confession.reactions.love.length,
       laugh: confession.reactions.laugh.length,
     };
 
-    // Also tell the client which types THIS user has currently reacted to
     const userReactions = validTypes.filter((t) =>
       confession.reactions[t].includes(userId)
     );
 
     return res.status(200).json({
-      _id:         confession._id,
-      text:        confession.text,
-      reactions:   safeReactions,
-      userReactions,              // e.g. ["like", "laugh"]
-      userId:      confession.userId,
-      createdAt:   confession.createdAt,
-      updatedAt:   confession.updatedAt,
+      _id: confession._id,
+      text: confession.text,
+      reactions: safeReactions,
+      userReactions,
+      tags: confession.tags,
+      commentCount: confession.commentCount,
+      userId: confession.userId,
+      createdAt: confession.createdAt,
+      updatedAt: confession.updatedAt,
     });
   } catch (err) {
     return res.status(500).json({ message: "Server error.", error: err.message });
   }
+};
+
+// ── GET /api/confessions/tags/predefined ────────────────────
+const getPredefinedTags = (req, res) => {
+  return res.json({ tags: PREDEFINED_TAGS });
 };
 
 export {
@@ -207,4 +262,6 @@ export {
   updateConfession,
   deleteConfession,
   reactToConfession,
+  getPredefinedTags,
+  PREDEFINED_TAGS,
 };

@@ -85,7 +85,11 @@ const HomePage = () => {
   const loadConfessions = async () => {
     try {
       const res = await getConfessions();
-      setConfessions(res.data);
+      // Backend now returns { confessions: [], pagination: {} }
+      const list = Array.isArray(res.data?.confessions)
+        ? res.data.confessions.filter((c) => c && c._id)
+        : [];
+      setConfessions(list);
     } catch (err) {
       console.error("Failed to load confessions:", err);
     } finally {
@@ -97,8 +101,10 @@ const HomePage = () => {
     loadConfessions();
   }, []);
 
-  const handleCreated = (newItem) =>
+  const handleCreated = (newItem) => {
+    if (!newItem || !newItem._id) return;
     setConfessions((prev) => [newItem, ...prev]);
+  };
 
   const handleUpdated = (updated) =>
     setConfessions((prev) =>

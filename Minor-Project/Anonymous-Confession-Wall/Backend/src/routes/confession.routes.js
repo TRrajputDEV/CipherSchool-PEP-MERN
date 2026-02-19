@@ -5,15 +5,17 @@ import {
   updateConfession,
   deleteConfession,
   reactToConfession,
+  getPredefinedTags,
 } from "../controllers/confession.controller.js";
 import { isAuthenticated } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// Public — anyone can view confessions
+// Public
 router.get("/", getAllConfessions);
+router.get("/tags/predefined", getPredefinedTags);
 
-// Protected — must be logged in via Google
+// Protected
 router.post("/", isAuthenticated, createConfession);
 router.put("/:id", isAuthenticated, updateConfession);
 router.delete("/:id", isAuthenticated, deleteConfession);

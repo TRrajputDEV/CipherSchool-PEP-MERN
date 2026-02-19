@@ -14,7 +14,7 @@ import "./config/passport.js";
 // Routes
 import authRoutes from "./routes/auth.routes.js";
 import confessionRoutes from "./routes/confession.routes.js";
-
+import userRoutes from "./routes/user.routes.js"
 const app = express();
 
 // ── Middleware ──────────────────────────────────────────────
@@ -41,7 +41,7 @@ app.use(passport.session());
 // ── API Routes ──────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/confessions", confessionRoutes);
-
+app.use("/api/users", userRoutes);
 // ── Connect DB then Start Server ────────────────────────────
 mongoose
   .connect(process.env.MONGO_URI)

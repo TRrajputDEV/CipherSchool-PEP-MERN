@@ -20,3 +20,7 @@ export const reactConfession = (id, type) =>
 
 // Tags
 export const getPredefinedTags = () => api.get("/api/confessions/tags/predefined");
+
+// ── NEW: User Profile & Personal Logs ───────────────────────
+export const getMyProfile = () => api.get("/api/users/me");
+export const getMyConfessions = (params) => api.get("/api/users/me/confessions", { params });

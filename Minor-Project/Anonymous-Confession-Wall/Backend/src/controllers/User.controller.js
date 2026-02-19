@@ -1,4 +1,4 @@
-import User from "../models/user.model.js";
+import User from "../models/User.model.js";
 import Confession from "../models/confession.model.js";
 
 // GET /api/users/me — get current user profile with stats

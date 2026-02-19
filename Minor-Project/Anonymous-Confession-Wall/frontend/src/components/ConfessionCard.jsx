@@ -21,37 +21,27 @@ const timeAgo = (date) => {
   return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-// --- Helper to generate physical "personality" based on ID ---
+// Generates physical paper traits based on the MongoDB ID
 const getCardPersonality = (id) => {
   if (!id) return { tilt: 0, theme: 'bg-[#111]', tapeStyle: 0, stamp: '' };
-  
   const charCode = id.charCodeAt(id.length - 1) + id.charCodeAt(id.length - 2);
-  
-  // 1. Varied dark paper tints (Obsidian, Charcoal, Espresso, Midnight)
   const themes = ['bg-[#0d0d0d]', 'bg-[#111111]', 'bg-[#141212]', 'bg-[#0f1115]'];
   const theme = themes[charCode % themes.length];
-  
-  // 2. Dynamic tilt from -2 to +2 degrees
   const tilt = (charCode % 5) - 2; 
-  
-  // 3. Different tape arrangements (0: Center, 1: Corners, 2: Single Right)
   const tapeStyle = charCode % 3;
-  
-  // 4. Subtle background stamps (Only appears on ~1/3 of the cards)
   const stamps = ['', '', '', 'EVIDENCE', 'ARCHIVED', 'SEALED'];
   const stamp = stamps[charCode % stamps.length];
-
   return { tilt, theme, tapeStyle, stamp };
 };
 
 const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) => {
-  const [data, setData]         = useState(confession || {});
+  const [data, setData]           = useState(confession || {});
   const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(confession?.text || "");
+  const [editText, setEditText]   = useState(confession?.text || "");
   const [secretCode, setSecretCode] = useState("");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [voted, setVoted]       = useState(new Set(confession?.userReactions || []));
+  const [error, setError]         = useState("");
+  const [loading, setLoading]     = useState(false);
+  const [voted, setVoted]         = useState(new Set(confession?.userReactions || []));
 
   if (!confession?._id) return null;
 
@@ -65,23 +55,27 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
     } catch (err) { console.error(err); }
   };
 
-  const handleEdit = async (e) => {
+  const handleEdit = async (e, newStatus = null) => {
     e.preventDefault();
-    if (!secretCode) return setError("Code required to save.");
+    if (!secretCode) return setError("Code required.");
     setLoading(true);
     try {
-      const res = await updateConfession(data._id, { text: editText, secretCode });
+      const payload = { text: editText, secretCode };
+      if (newStatus) payload.status = newStatus; // Can toggle draft/publish
+
+      const res = await updateConfession(data._id, payload);
       setData(res.data);
       onUpdated(res.data);
       setIsEditing(false);
       setError("");
+      setSecretCode(""); // Clear for security
     } catch (err) { setError("Invalid code."); } 
     finally { setLoading(false); }
   };
 
   const handleDelete = async (e) => {
     e.preventDefault();
-    if (!secretCode) return setError("Code required to delete.");
+    if (!secretCode) return setError("Code required.");
     setLoading(true);
     try {
       await deleteConfession(data._id, secretCode);
@@ -95,7 +89,7 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
       style={{ transform: `rotate(${tilt}deg)` }}
     >
       
-      {/* ── THE TAPE VARIATIONS ── */}
+      {/* ── TAPE OVERLAYS ── */}
       {tapeStyle === 0 && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-7 bg-white/10 backdrop-blur-md rotate-[-2deg] border border-white/5 shadow-md z-20 pointer-events-none" />
       )}
@@ -109,8 +103,7 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
         <div className="absolute -top-2 right-4 w-16 h-6 bg-white/10 backdrop-blur-md rotate-[12deg] shadow-md z-20 pointer-events-none" />
       )}
 
-
-      {/* ── THE CARD BOARD/PAPER ── */}
+      {/* ── CARD BODY ── */}
       <div className={`relative ${theme} border border-white/10 p-6 sm:p-8 shadow-[0_12px_35px_rgb(0,0,0,0.9)] flex-1 flex flex-col overflow-hidden`}>
         
         {/* Subtle Paper Texture */}
@@ -131,6 +124,14 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
             Entry #{data._id?.slice(-4) || 'XXXX'}
           </span>
           <div className="flex items-center gap-4">
+            
+            {/* Show DRAFT tag if it's a draft */}
+            {data.status === 'draft' && (
+              <span className="text-[#ff9900] border border-[#ff9900]/30 px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-widest">
+                Draft
+              </span>
+            )}
+            
             <time className="text-[10px] text-[#555] uppercase tracking-[0.1em]">
               {timeAgo(data.createdAt)}
             </time>
@@ -138,7 +139,7 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
               <button 
                 onClick={() => {
                   setIsEditing(!isEditing);
-                  setError(""); // Clear errors when toggling
+                  setError(""); 
                 }} 
                 className="text-[#444] hover:text-white transition-colors"
               >
@@ -155,7 +156,6 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
         {/* Content */}
         {!isEditing ? (
           <>
-            {/* The Confession Text */}
             <p 
               className="text-[#eee] text-lg sm:text-xl leading-relaxed font-light mb-8 flex-1 whitespace-pre-wrap relative z-10"
               style={{ fontFamily: 'var(--font-serif)' }}
@@ -164,7 +164,6 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
             </p>
 
             <div className="mt-auto relative z-10">
-              {/* Tags */}
               {data.tags && data.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-5">
                   {data.tags.map(tag => (
@@ -181,8 +180,10 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
                    <button 
                      key={type}
                      onClick={() => isAuthenticated && handleReact(type)}
+                     disabled={data.status === 'draft'} // Disable reactions on drafts
                      className={`
                        flex items-center gap-2 transition-all duration-300
+                       ${data.status === 'draft' ? 'opacity-30 cursor-not-allowed' : ''}
                        ${voted.has(type) ? 'text-white scale-110' : 'text-[#555] hover:text-[#aaa]'}
                      `}
                    >
@@ -194,7 +195,7 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
             </div>
           </>
         ) : (
-          /* Edit/Delete Mode Form */
+          /* ── EDIT MODE ── */
           <div className="flex flex-col gap-4 flex-1 anim-fade-in relative z-10">
              <textarea 
                 value={editText} 
@@ -206,28 +207,38 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
              <div className="flex flex-col gap-3 mt-auto pt-4 border-t border-dashed border-white/10">
                <input 
                  type="password" 
-                 placeholder="Secret Code" 
+                 placeholder="Authorization Code" 
                  value={secretCode}
                  onChange={e => setSecretCode(e.target.value)}
                  className="w-full bg-transparent text-white text-xs tracking-widest px-2 py-2 border-b border-white/10 outline-none focus:border-white transition-colors"
                />
                
-               {/* Fixed Action Buttons: Save & Delete side by side */}
+               {/* 3 Action Buttons */}
                <div className="flex gap-2 w-full pt-2">
+                 
                  <button 
-                   onClick={handleEdit}
+                   onClick={(e) => handleEdit(e, data.status)}
                    disabled={loading}
-                   className="flex-1 bg-white text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2.5 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50"
+                   className="flex-1 bg-white text-black text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50"
                  >
-                   {loading ? '...' : 'Save Edit'}
+                   Save
+                 </button>
+
+                 {/* Toggles between Draft and Published state */}
+                 <button 
+                   onClick={(e) => handleEdit(e, data.status === 'draft' ? 'published' : 'draft')}
+                   disabled={loading}
+                   className="flex-[1.5] bg-transparent border border-white/40 text-white text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-white/10 transition-all disabled:opacity-50"
+                 >
+                   {data.status === 'draft' ? 'Publish' : 'Make Draft'}
                  </button>
                  
                  <button 
                    onClick={handleDelete}
                    disabled={loading}
-                   className="flex-1 bg-transparent border border-[#ff4444] text-[#ff4444] text-[10px] font-bold tracking-widest uppercase px-4 py-2.5 hover:bg-[#ff4444] hover:text-white transition-all disabled:opacity-50"
+                   className="flex-1 bg-transparent border border-[#ff4444] text-[#ff4444] text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-[#ff4444] hover:text-white transition-all disabled:opacity-50"
                  >
-                   {loading ? '...' : 'Delete'}
+                   Burn
                  </button>
                </div>
              </div>

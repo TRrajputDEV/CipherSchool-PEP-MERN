@@ -21,7 +21,6 @@ const timeAgo = (date) => {
   return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-// Generates physical paper traits based on the MongoDB ID
 const getCardPersonality = (id) => {
   if (!id) return { tilt: 0, theme: 'bg-[#111]', tapeStyle: 0, stamp: '' };
   const charCode = id.charCodeAt(id.length - 1) + id.charCodeAt(id.length - 2);
@@ -34,7 +33,8 @@ const getCardPersonality = (id) => {
   return { tilt, theme, tapeStyle, stamp };
 };
 
-const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) => {
+// ADD onCardClick to props
+const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated, onCardClick }) => {
   const [data, setData]           = useState(confession || {});
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText]   = useState(confession?.text || "");
@@ -57,24 +57,26 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
 
   const handleEdit = async (e, newStatus = null) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent modal from opening
     if (!secretCode) return setError("Code required.");
     setLoading(true);
     try {
       const payload = { text: editText, secretCode };
-      if (newStatus) payload.status = newStatus; // Can toggle draft/publish
+      if (newStatus) payload.status = newStatus;
 
       const res = await updateConfession(data._id, payload);
       setData(res.data);
       onUpdated(res.data);
       setIsEditing(false);
       setError("");
-      setSecretCode(""); // Clear for security
+      setSecretCode(""); 
     } catch (err) { setError("Invalid code."); } 
     finally { setLoading(false); }
   };
 
   const handleDelete = async (e) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent modal from opening
     if (!secretCode) return setError("Code required.");
     setLoading(true);
     try {
@@ -85,36 +87,33 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
 
   return (
     <article 
-      className="group relative flex flex-col h-full mt-4 transition-all duration-500 hover:z-20 hover:scale-[1.03]"
+      // THE MAIN CLICK HANDLER
+      onClick={() => {
+        if (!isEditing && onCardClick) onCardClick(data);
+      }}
+      // Added cursor-pointer
+      className="group relative flex flex-col h-full transition-all duration-500 hover:z-20 hover:scale-[1.03] cursor-pointer"
       style={{ transform: `rotate(${tilt}deg)` }}
     >
       
       {/* ── TAPE OVERLAYS ── */}
-      {tapeStyle === 0 && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-7 bg-white/10 backdrop-blur-md rotate-[-2deg] border border-white/5 shadow-md z-20 pointer-events-none" />
-      )}
+      {tapeStyle === 0 && <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-7 bg-white/10 backdrop-blur-md rotate-[-2deg] border border-white/5 shadow-md z-20 pointer-events-none" />}
       {tapeStyle === 1 && (
         <>
           <div className="absolute -top-2 -left-2 w-12 h-5 bg-white/10 backdrop-blur-md rotate-[-45deg] shadow-md z-20 pointer-events-none" />
           <div className="absolute -bottom-2 -right-2 w-12 h-5 bg-white/10 backdrop-blur-md rotate-[-45deg] shadow-md z-20 pointer-events-none" />
         </>
       )}
-      {tapeStyle === 2 && (
-        <div className="absolute -top-2 right-4 w-16 h-6 bg-white/10 backdrop-blur-md rotate-[12deg] shadow-md z-20 pointer-events-none" />
-      )}
+      {tapeStyle === 2 && <div className="absolute -top-2 right-4 w-16 h-6 bg-white/10 backdrop-blur-md rotate-[12deg] shadow-md z-20 pointer-events-none" />}
 
       {/* ── CARD BODY ── */}
       <div className={`relative ${theme} border border-white/10 p-6 sm:p-8 shadow-[0_12px_35px_rgb(0,0,0,0.9)] flex-1 flex flex-col overflow-hidden`}>
         
-        {/* Subtle Paper Texture */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
 
-        {/* Faint Watermark Stamp */}
         {stamp && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.02] select-none overflow-hidden">
-            <span className="text-[5rem] font-black tracking-widest text-white -rotate-45" style={{ fontFamily: 'var(--font-sans)' }}>
-              {stamp}
-            </span>
+            <span className="text-[5rem] font-black tracking-widest text-white -rotate-45" style={{ fontFamily: 'var(--font-sans)' }}>{stamp}</span>
           </div>
         )}
 
@@ -124,20 +123,15 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
             Entry #{data._id?.slice(-4) || 'XXXX'}
           </span>
           <div className="flex items-center gap-4">
-            
-            {/* Show DRAFT tag if it's a draft */}
             {data.status === 'draft' && (
-              <span className="text-[#ff9900] border border-[#ff9900]/30 px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-widest">
-                Draft
-              </span>
+              <span className="text-[#ff9900] border border-[#ff9900]/30 px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-widest">Draft</span>
             )}
-            
-            <time className="text-[10px] text-[#555] uppercase tracking-[0.1em]">
-              {timeAgo(data.createdAt)}
-            </time>
+            <time className="text-[10px] text-[#555] uppercase tracking-[0.1em]">{timeAgo(data.createdAt)}</time>
             {isAuthenticated && (
               <button 
-                onClick={() => {
+                // STOP PROPAGATION HERE
+                onClick={(e) => {
+                  e.stopPropagation();
                   setIsEditing(!isEditing);
                   setError(""); 
                 }} 
@@ -156,10 +150,7 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
         {/* Content */}
         {!isEditing ? (
           <>
-            <p 
-              className="text-[#eee] text-lg sm:text-xl leading-relaxed font-light mb-8 flex-1 whitespace-pre-wrap relative z-10"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
+            <p className="text-[#eee] text-lg sm:text-xl leading-relaxed font-light mb-8 flex-1 whitespace-pre-wrap relative z-10" style={{ fontFamily: 'var(--font-serif)' }}>
               {data.text}
             </p>
 
@@ -175,32 +166,43 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
               )}
 
               {/* Footer / Reactions */}
-              <div className="flex items-center gap-5 border-t border-dashed border-white/10 pt-4">
-                {REACTIONS.map(({ type, icon }) => (
-                   <button 
-                     key={type}
-                     onClick={() => isAuthenticated && handleReact(type)}
-                     disabled={data.status === 'draft'} // Disable reactions on drafts
-                     className={`
-                       flex items-center gap-2 transition-all duration-300
-                       ${data.status === 'draft' ? 'opacity-30 cursor-not-allowed' : ''}
-                       ${voted.has(type) ? 'text-white scale-110' : 'text-[#555] hover:text-[#aaa]'}
-                     `}
-                   >
-                     {icon}
-                     <span className="text-xs tracking-widest font-sans">{data.reactions[type] || 0}</span>
-                   </button>
-                ))}
+              <div className="flex items-center justify-between border-t border-dashed border-white/10 pt-4">
+                <div className="flex items-center gap-5">
+                  {REACTIONS.map(({ type, icon }) => (
+                     <button 
+                       key={type}
+                       // STOP PROPAGATION HERE
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         if (isAuthenticated) handleReact(type);
+                       }}
+                       disabled={data.status === 'draft'}
+                       className={`flex items-center gap-2 transition-all duration-300 ${data.status === 'draft' ? 'opacity-30 cursor-not-allowed' : ''} ${voted.has(type) ? 'text-white scale-110' : 'text-[#555] hover:text-[#aaa]'}`}
+                     >
+                       {icon}
+                       <span className="text-xs tracking-widest font-sans">{data.reactions[type] || 0}</span>
+                     </button>
+                  ))}
+                </div>
+                
+                {/* Visual cue that it's clickable */}
+                <div className="text-[#333] group-hover:text-white/40 transition-colors flex items-center gap-1">
+                   <span className="text-[9px] font-mono tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300">Examine</span>
+                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7"/></svg>
+                </div>
               </div>
             </div>
           </>
         ) : (
           /* ── EDIT MODE ── */
-          <div className="flex flex-col gap-4 flex-1 anim-fade-in relative z-10">
+          <div 
+            className="flex flex-col gap-4 flex-1 anim-fade-in relative z-10"
+            onClick={(e) => e.stopPropagation()} // STOP CLICKS INSIDE FORM FROM OPENING MODAL
+          >
              <textarea 
                 value={editText} 
                 onChange={e => setEditText(e.target.value)}
-                className="bg-black/40 text-[#eee] text-lg font-light leading-relaxed p-4 border border-white/10 outline-none resize-none flex-1 min-h-[120px] focus:border-white/30 transition-colors"
+                className="bg-black/40 text-[#eee] text-lg font-light leading-relaxed p-4 border border-white/10 outline-none resize-none flex-1 min-h-[120px] focus:border-white/30 transition-colors custom-scrollbar"
                 style={{ fontFamily: 'var(--font-serif)' }}
              />
              
@@ -213,33 +215,12 @@ const ConfessionCard = ({ confession, onUpdated, onDeleted, isAuthenticated }) =
                  className="w-full bg-transparent text-white text-xs tracking-widest px-2 py-2 border-b border-white/10 outline-none focus:border-white transition-colors"
                />
                
-               {/* 3 Action Buttons */}
                <div className="flex gap-2 w-full pt-2">
-                 
-                 <button 
-                   onClick={(e) => handleEdit(e, data.status)}
-                   disabled={loading}
-                   className="flex-1 bg-white text-black text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50"
-                 >
-                   Save
-                 </button>
-
-                 {/* Toggles between Draft and Published state */}
-                 <button 
-                   onClick={(e) => handleEdit(e, data.status === 'draft' ? 'published' : 'draft')}
-                   disabled={loading}
-                   className="flex-[1.5] bg-transparent border border-white/40 text-white text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-white/10 transition-all disabled:opacity-50"
-                 >
+                 <button onClick={(e) => handleEdit(e, data.status)} disabled={loading} className="flex-1 bg-white text-black text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50">Save</button>
+                 <button onClick={(e) => handleEdit(e, data.status === 'draft' ? 'published' : 'draft')} disabled={loading} className="flex-[1.5] bg-transparent border border-white/40 text-white text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-white/10 transition-all disabled:opacity-50">
                    {data.status === 'draft' ? 'Publish' : 'Make Draft'}
                  </button>
-                 
-                 <button 
-                   onClick={handleDelete}
-                   disabled={loading}
-                   className="flex-1 bg-transparent border border-[#ff4444] text-[#ff4444] text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-[#ff4444] hover:text-white transition-all disabled:opacity-50"
-                 >
-                   Burn
-                 </button>
+                 <button onClick={handleDelete} disabled={loading} className="flex-1 bg-transparent border border-[#ff4444] text-[#ff4444] text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-2.5 hover:bg-[#ff4444] hover:text-white transition-all disabled:opacity-50">Burn</button>
                </div>
              </div>
              {error && <p className="text-[#ff4444] text-[10px] tracking-wide mt-1 text-center">{error}</p>}

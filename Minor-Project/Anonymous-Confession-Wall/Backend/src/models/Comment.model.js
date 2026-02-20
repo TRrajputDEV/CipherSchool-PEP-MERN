@@ -40,7 +40,6 @@ const commentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index for fast querying of top-level comments
 commentSchema.index({ confessionId: 1, parentId: 1 });
 
 const Comment = mongoose.model("Comment", commentSchema);

@@ -5,10 +5,9 @@ import passport from "passport";
 import cors from "cors";
 import dotenv from "dotenv";
 
-// Load env variables first
+
 dotenv.config();
 
-// Passport config (must import after dotenv)
 import "./config/passport.js";
 
 // Routes
@@ -17,7 +16,6 @@ import confessionRoutes from "./routes/confession.routes.js";
 import userRoutes from "./routes/user.routes.js"
 const app = express();
 
-// ── Middleware ──────────────────────────────────────────────
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
@@ -38,11 +36,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ── API Routes ──────────────────────────────────────────────
+
 app.use("/api/auth", authRoutes);
 app.use("/api/confessions", confessionRoutes);
 app.use("/api/users", userRoutes);
-// ── Connect DB then Start Server ────────────────────────────
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {

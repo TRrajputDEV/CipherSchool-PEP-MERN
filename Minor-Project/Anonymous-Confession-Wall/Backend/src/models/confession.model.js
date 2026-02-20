@@ -26,8 +26,6 @@ const confessionSchema = new mongoose.Schema(
       index: true,
     },
 
-    // ── NEW FIELDS ────────────────────────────────────────────
-
     // Tags for categorization (lowercase, max 5 per post)
     tags: {
       type: [String],

@@ -35,7 +35,7 @@ const ArchiveSearch = ({ onSearch, isSearching }) => {
           />
           <div className="flex items-center gap-2 pr-2">
             {input && (
-              <button type="button" onClick={handleClear} className="text-[#555] hover:text-[#ff4444] px-2 transition-colors font-mono text-[10px] tracking-widest uppercase">
+              <button type="button" onClickQuery={handleClear} className="text-[#555] hover:text-[#ff4444] px-2 transition-colors font-mono text-[10px] tracking-widest uppercase">
                 Clear
               </button>
             )}
@@ -131,7 +131,6 @@ const HomePage = () => {
 
         {predefinedTags.length > 0 && (
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10 anim-slide-up delay-0">
-            <span className="text-[9px] text-[#444] uppercase tracking-[0.2em] font-mono mr-2 hidden sm:inline-block">Filter by Category:</span>
             {predefinedTags.map(tag => (
               <button
                 key={tag}
